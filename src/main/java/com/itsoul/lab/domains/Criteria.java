@@ -40,11 +40,11 @@ public class Criteria {
 		}
 		return prop;
 	}
-	public Criteria(String key, String value, String type) {
+	public Criteria(String key, String value, DataType type) {
 		super();
 		this.key = key;
 		this.value = value;
-		this.type = type;
+		this.type = type.toString();
 	}
 	
 }

@@ -10,6 +10,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.it.soul.lab.sql.query.models.DataType;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 
@@ -50,7 +51,7 @@ public class PassengerList implements ClickListener{
 		query.setLocation(0);
 		query.setSize(5);
 		List<Criteria> criterias = new ArrayList<>();
-		criterias.add(new Criteria("name","Sohana","STRING"));
+		criterias.add(new Criteria("name","Sohana",DataType.STRING));
 		query.setCriterias(criterias);
 		
 		Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.entity(query, MediaType.APPLICATION_JSON));
