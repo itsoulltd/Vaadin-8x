@@ -54,19 +54,7 @@ public class PassengerInteractor {
 		} else if(type == InteractorType.JPA) {
 			ORMService<Passenger> service = new ORMService<>(JPAResourceLoader.entityManager(), Passenger.class);
 			try {
-				ExpressionInterpreter and = null;
-				ExpressionInterpreter lhr = null;
-				for (Criteria element : query.getCriterias()) {
-					Property prop = element.getProperty();
-					if(lhr == null) {
-						lhr = new Expression(prop, Operator.EQUAL);
-						and = lhr;
-					}else {
-						ExpressionInterpreter rhr = new Expression(prop, Operator.EQUAL);
-						and = new AndExpression(lhr, rhr);
-						lhr = and;
-					}
-				}
+				ExpressionInterpreter and = createExpression(query);
 				List<Passenger> items = (List<Passenger>) service.findMatches(and);
 				PassengerList list = new PassengerList();
 				list.setPassengerList(items);
@@ -80,10 +68,11 @@ public class PassengerInteractor {
 			try {
 				Connection conn = JDBConnectionPool.connection("testDB");
 				SQLExecutor exe = new SQLExecutor(conn);
-				
+				ExpressionInterpreter and = createExpression(query);
 				SQLSelectQuery queryx = (SQLSelectQuery) new SQLQuery.Builder(QueryType.SELECT)
 						.columns()
 						.from(query.getTable())
+						.where(and)
 						.orderBy(query.getOrderBy())
 						.addLimit(query.getLimit(), query.getOffset())
 						.build();
@@ -101,6 +90,23 @@ public class PassengerInteractor {
 			}
 			return null;
 		}
+	}
+
+	private ExpressionInterpreter createExpression(FetchQuery query) {
+		ExpressionInterpreter and = null;
+		ExpressionInterpreter lhr = null;
+		for (Criteria element : query.getCriterias()) {
+			Property prop = element.getProperty();
+			if(lhr == null) {
+				lhr = new Expression(prop, Operator.EQUAL);
+				and = lhr;
+			}else {
+				ExpressionInterpreter rhr = new Expression(prop, Operator.EQUAL);
+				and = new AndExpression(lhr, rhr);
+				lhr = and;
+			}
+		}
+		return and;
 	}
 	
 	public PassengerList fatchPasserger(FetchQuery query, MediaType mediaType) {
