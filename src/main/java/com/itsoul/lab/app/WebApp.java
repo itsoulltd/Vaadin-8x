@@ -4,6 +4,8 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.it.soul.lab.connect.JDBConnectionPool;
+import com.itsoul.lab.domains.Passenger;
+import com.itsoul.lab.domains.PassengerList;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
@@ -25,6 +27,7 @@ import com.vaadin.ui.VerticalLayout;
 public class WebApp extends UI {
 
 	private static final long serialVersionUID = 1L;
+	private PassengerList fetcher;
 
 	@Override
     protected void init(VaadinRequest vaadinRequest) {
@@ -37,12 +40,22 @@ public class WebApp extends UI {
         button.addClickListener(e -> {
             layout.addComponent(new Label("Thanks " + name.getValue() 
                     + ", it works!"));
+            Button fetchMore = new Button("Fetch Passengers");
+            fetcher = new PassengerList();
+            fetchMore.addClickListener(fetcher);
+            layout.addComponent(fetchMore);
         });
         
         layout.addComponents(name, button);
         
         setContent(layout);
     }
+	
+	@Override
+	public void detach() {
+		super.detach();
+		fetcher = null;
+	}
 
     @WebServlet(urlPatterns = "/*", name = "WebAppServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = WebApp.class, productionMode = false)
