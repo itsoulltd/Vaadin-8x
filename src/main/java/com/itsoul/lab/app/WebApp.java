@@ -1,11 +1,18 @@
 package com.itsoul.lab.app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.it.soul.lab.connect.JDBConnectionPool;
-import com.itsoul.lab.domains.Passenger;
+import com.it.soul.lab.sql.query.models.DataType;
+import com.itsoul.lab.domains.Criteria;
+import com.itsoul.lab.domains.FetchQuery;
 import com.itsoul.lab.domains.PassengerList;
+import com.itsoul.lab.interactors.PassengerInteractor;
+import com.itsoul.lab.interactors.PassengerInteractor.InteractorType;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
@@ -27,7 +34,7 @@ import com.vaadin.ui.VerticalLayout;
 public class WebApp extends UI {
 
 	private static final long serialVersionUID = 1L;
-	private PassengerList fetcher;
+	private PassengerInteractor fetcher;
 
 	@Override
     protected void init(VaadinRequest vaadinRequest) {
@@ -40,9 +47,23 @@ public class WebApp extends UI {
         button.addClickListener(e -> {
             layout.addComponent(new Label("Thanks " + name.getValue() 
                     + ", it works!"));
+           
             Button fetchMore = new Button("Fetch Passengers");
-            fetcher = new PassengerList();
-            fetchMore.addClickListener(fetcher);
+            fetcher = new PassengerInteractor(InteractorType.JDBC);
+            fetchMore.addClickListener(event -> {
+            	FetchQuery query = new FetchQuery();
+    			query.setTable("Passenger");
+    			query.setOrderBy("id");
+    			query.setLocation(0);
+    			query.setSize(5);
+    			List<Criteria> criterias = new ArrayList<>();
+    			criterias.add(new Criteria("name","Sohana",DataType.STRING));
+    			query.setCriterias(criterias);
+            	PassengerList list = fetcher.fetch(query);
+            	//TODO:
+            	System.out.println(list.toString());
+            });
+            
             layout.addComponent(fetchMore);
         });
         
