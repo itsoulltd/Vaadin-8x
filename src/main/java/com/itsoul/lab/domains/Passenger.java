@@ -1,11 +1,16 @@
 package com.itsoul.lab.domains;
 
+import java.util.Map;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.it.soul.lab.sql.query.models.Property;
+import com.it.soul.lab.sql.query.models.Row;
 
 @Entity
 @Table(name="Passenger")
@@ -20,9 +25,6 @@ public class Passenger {
 	private Integer age;
 	@Column
 	private String sex;
-	public Passenger() {
-		super();
-	}
 	public String getName() {
 		return name;
 	}
@@ -48,5 +50,17 @@ public class Passenger {
 		this.sex = sex;
 	}
 	
+	public Passenger() {}
+	
+	public Passenger(Map<String,Property> properties) {
+		name = (String)((Property)properties.get("name")).getValue();
+		id =  (Integer)((Property)properties.get("id")).getValue();
+		age = (Integer)((Property)properties.get("age")).getValue();
+		sex = (String)((Property)properties.get("sex")).getValue();
+	}
+	
+	public Passenger(Row properties) {
+		this(properties.keyValueMap());
+	}
 	
 }

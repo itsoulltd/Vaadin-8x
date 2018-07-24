@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -12,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.it.soul.lab.connect.JDBConnectionPool;
+import com.it.soul.lab.jpql.query.JPQLQuery;
+import com.it.soul.lab.jpql.query.JPQLSelectQuery;
 import com.it.soul.lab.service.ORMService;
 import com.it.soul.lab.sql.SQLExecutor;
 import com.it.soul.lab.sql.query.SQLQuery;
@@ -51,13 +54,38 @@ public class PassengerInteractor {
 	public PassengerList fetch(FetchQuery query) {
 		if (type == InteractorType.RESTClient) {
 			return fatchPasserger(query, MediaType.APPLICATION_JSON_TYPE);
-		} else if(type == InteractorType.JPA) {
+		} 
+		else if(type == InteractorType.JPA) {
 			ORMService<Passenger> service = new ORMService<>(JPAResourceLoader.entityManager(), Passenger.class);
 			try {
-				ExpressionInterpreter and = createExpression(query);
-				List<Passenger> items = (List<Passenger>) service.findMatches(and);
 				PassengerList list = new PassengerList();
-				list.setPassengerList(items);
+				ExpressionInterpreter and = createExpression(query);
+				JPQLSelectQuery jpql  = null;
+				if(and == null) {
+					jpql = new JPQLQuery.Builder(QueryType.SELECT)
+							.columns()
+							.from(service.getEntity())
+							.orderBy("id")
+							.build();
+				}else {
+					jpql = new JPQLQuery.Builder(QueryType.SELECT)
+							.columns()
+							.from(service.getEntity())
+							.where(and)
+							.orderBy("id")
+							.build();
+				}
+				Query iQuery = service.getEntityManager().createQuery(jpql.toString());
+				if(and != null) {
+					for (Expression item : and.resolveExpressions()) {
+						iQuery.setParameter(item.getProperty(), item.getValueProperty().getValue());
+					}
+				}
+				iQuery.setFirstResult(query.getOffset());
+				iQuery.setMaxResults(query.getLimit());
+				@SuppressWarnings("unchecked")
+				List<Passenger> passengers = iQuery.getResultList();
+				list.setPassengerList(passengers);
 				return list;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -69,13 +97,23 @@ public class PassengerInteractor {
 				Connection conn = JDBConnectionPool.connection("testDB");
 				SQLExecutor exe = new SQLExecutor(conn);
 				ExpressionInterpreter and = createExpression(query);
-				SQLSelectQuery queryx = (SQLSelectQuery) new SQLQuery.Builder(QueryType.SELECT)
-						.columns()
-						.from(query.getTable())
-						.where(and)
-						.orderBy(query.getOrderBy())
-						.addLimit(query.getLimit(), query.getOffset())
-						.build();
+				SQLSelectQuery queryx = null;
+				if(and == null) {
+					queryx = new SQLQuery.Builder(QueryType.SELECT)
+							.columns()
+							.from(query.getTable())
+							.orderBy(query.getOrderBy())
+							.addLimit(query.getLimit(), query.getOffset())
+							.build();
+				}else {
+					queryx = new SQLQuery.Builder(QueryType.SELECT)
+							.columns()
+							.from(query.getTable())
+							.where(and)
+							.orderBy(query.getOrderBy())
+							.addLimit(query.getLimit(), query.getOffset())
+							.build();
+				}
 				ResultSet set = exe.executeSelect(queryx);
 				Table items = exe.collection(set);
 				exe = null;//exe.close(); //automatically called when executor object is garbage collected.

@@ -1,14 +1,10 @@
 package com.itsoul.lab.app;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.it.soul.lab.connect.JDBConnectionPool;
 import com.it.soul.lab.sql.query.models.DataType;
-import com.itsoul.lab.domains.Criteria;
 import com.itsoul.lab.domains.FetchQuery;
 import com.itsoul.lab.domains.PassengerList;
 import com.itsoul.lab.interactors.PassengerInteractor;
@@ -49,16 +45,14 @@ public class WebApp extends UI {
                     + ", it works!"));
            
             Button fetchMore = new Button("Fetch Passengers");
-            fetcher = new PassengerInteractor(InteractorType.JDBC);
+            fetcher = new PassengerInteractor(InteractorType.JPA);
             fetchMore.addClickListener(event -> {
             	FetchQuery query = new FetchQuery();
     			query.setTable("Passenger");
     			query.setOrderBy("id");
     			query.setLocation(0);
-    			query.setSize(5);
-    			List<Criteria> criterias = new ArrayList<>();
-    			criterias.add(new Criteria("name","Sohana",DataType.STRING));
-    			query.setCriterias(criterias);
+    			query.setSize(20);
+    			query.addCriteria("name","tanvir",DataType.STRING);
             	PassengerList list = fetcher.fetch(query);
             	//TODO:
             	System.out.println(list.toString());
