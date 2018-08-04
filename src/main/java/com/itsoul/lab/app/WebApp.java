@@ -1,11 +1,15 @@
 package com.itsoul.lab.app;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.it.soul.lab.connect.JDBConnectionPool;
 import com.it.soul.lab.sql.query.models.DataType;
 import com.itsoul.lab.domains.FetchQuery;
+import com.itsoul.lab.domains.Passenger;
 import com.itsoul.lab.domains.PassengerList;
 import com.itsoul.lab.interactors.PassengerInteractor;
 import com.itsoul.lab.interactors.PassengerInteractor.InteractorType;
@@ -45,7 +49,9 @@ public class WebApp extends UI {
                     + ", it works!"));
            
             Button fetchMore = new Button("Fetch Passengers");
+            
             fetcher = new PassengerInteractor(InteractorType.JPA);
+            
             fetchMore.addClickListener(event -> {
             	FetchQuery query = new FetchQuery();
     			query.setTable("Passenger");
@@ -54,8 +60,21 @@ public class WebApp extends UI {
     			query.setSize(20);
     			query.addCriteria("name","tanvir",DataType.STRING);
             	PassengerList list = fetcher.fetch(query);
-            	//TODO:
-            	System.out.println(list.toString());
+            	
+            	//How to Use Lambda & Stream API of Java8
+            	List<Passenger> items = list.getPassengerList();
+            	items.stream()
+            			.filter(p -> p.getAge() > 25 && p.getAge() <= 33)
+            			.map(p -> p.getId() + ":" + p.getName())
+            			.forEach(print -> System.out.println(print));
+            	
+            	//
+            	List<String> names = items.stream()
+            			.filter(p -> p.getAge() > 25)
+            			.map(p -> p.getName())
+            			.collect(Collectors.toList());
+            	names.forEach(nm -> System.out.println(nm));
+            	
             });
             
             layout.addComponent(fetchMore);
