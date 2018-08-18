@@ -33,7 +33,7 @@ import com.itsoul.lab.domains.FetchQuery;
 import com.itsoul.lab.domains.Passenger;
 import com.itsoul.lab.domains.PassengerList;
 
-public class PassengerInteractor {
+public class PassengerInteractor implements Interactor<PassengerList, FetchQuery>{
 	
 	public enum InteractorType{
 		RESTClient,
@@ -47,13 +47,13 @@ public class PassengerInteractor {
 	public PassengerInteractor(InteractorType type) {
 		super();
 		Client cl = ClientBuilder.newClient();
-		target = cl.target("http://localhost:8080/Jersey-2.0-Example/api/passenger/JPA");
+		target = cl.target(getJerseyExample()+"passenger/JPA");
 		this.type = type;
 	}
 	
 	public PassengerList fetch(FetchQuery query) {
 		if (type == InteractorType.RESTClient) {
-			return fatchPasserger(query, MediaType.APPLICATION_JSON_TYPE);
+			return fetchPasserger(query, MediaType.APPLICATION_JSON_TYPE);
 		} 
 		else if(type == InteractorType.JPA) {
 			ORMService<Passenger> service = new ORMService<>(JPAResourceLoader.entityManager(), Passenger.class);
@@ -147,7 +147,7 @@ public class PassengerInteractor {
 		return and;
 	}
 	
-	public PassengerList fatchPasserger(FetchQuery query, MediaType mediaType) {
+	public PassengerList fetchPasserger(FetchQuery query, MediaType mediaType) {
 		Response response = target.request(mediaType).post(Entity.entity(query, mediaType));
 		//System.out.print(response.toString());
 		PassengerList list = response.readEntity(PassengerList.class);

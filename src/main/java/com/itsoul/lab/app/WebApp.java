@@ -8,11 +8,15 @@ import javax.servlet.annotation.WebServlet;
 
 import com.it.soul.lab.connect.JDBConnectionPool;
 import com.it.soul.lab.sql.query.models.DataType;
+import com.itsoul.lab.domains.ExistanceConsume;
+import com.itsoul.lab.domains.ExistanceProduce;
 import com.itsoul.lab.domains.FetchQuery;
 import com.itsoul.lab.domains.Passenger;
 import com.itsoul.lab.domains.PassengerList;
+import com.itsoul.lab.interactors.Interactor;
 import com.itsoul.lab.interactors.PassengerInteractor;
 import com.itsoul.lab.interactors.PassengerInteractor.InteractorType;
+import com.itsoul.lab.interactors.UserExistInteractor;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
@@ -34,7 +38,8 @@ import com.vaadin.ui.VerticalLayout;
 public class WebApp extends UI {
 
 	private static final long serialVersionUID = 1L;
-	private PassengerInteractor fetcher;
+	private Interactor<PassengerList, FetchQuery> fetcher;
+	private Interactor<ExistanceProduce, ExistanceConsume> isExist;
 
 	@Override
     protected void init(VaadinRequest vaadinRequest) {
@@ -81,6 +86,18 @@ public class WebApp extends UI {
         });
         
         layout.addComponents(name, button);
+        
+        Button b2 = new Button("IsExist");
+        b2.addClickListener(event -> {
+        	ExistanceConsume consume = new ExistanceConsume();
+        	consume.setTenantID("73da6b0a-affb-4ffb-9ab0-c6fd74b4eedd");
+        	consume.setEmail("m.towhid@gmail.com");
+        	isExist = new UserExistInteractor();
+        	ExistanceProduce prod = isExist.fetch(consume);
+        	System.out.println(prod.getIsExist());
+        });
+        
+        layout.addComponent(b2);
         
         setContent(layout);
     }
